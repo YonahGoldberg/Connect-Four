@@ -1,0 +1,56 @@
+body {
+    margin: 0;
+    background-color: darkgrey;
+}
+
+h1 {
+    color: #333;
+    font-family: Helvetica;
+    font-weight: 900;
+    text-align: center;
+    padding-top: 2%;
+    margin: 0;
+}
+
+.nav ul{
+  list-style: none;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+.nav li {
+    display: inline-block;
+    padding-top: 2%;
+}
+
+.nav a {
+    color: #fff;
+    background-color: #333;
+    text-decoration: none;
+    width: 75px;
+    display: block;
+    padding: 12px;
+    font-size: 14px;
+    font-family: Helvetica;
+}
+
+.nav a:hover {
+    background: #000;
+    transition: 0.4s;
+}
+
+.container {
+    padding: 5%;
+}
+
+.game {
+    border: 1px solid;
+    height: 300px;
+    width: 350px;
+    margin: auto;
+}
+
+
+
+
