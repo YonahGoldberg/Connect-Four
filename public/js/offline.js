@@ -1,19 +1,188 @@
-let board = [];
-for (let i = 0; i < 49; i++) {
-    board.push("empty");
+class Board {
+    constructor() {
+        this.turn = "black";
+        this.board = [];
+        for (let i = 0; i < 42; i++) {
+            this.board.push("empty");
+        }
+        for (let i = 0; i < 7; i++) {
+            this.board.push("bottom");
+        }  
+        this.winningSquares = [
+            [0, 1, 2, 3],
+            [41, 40, 39, 38],
+            [7, 8, 9, 10],
+            [34, 33, 32, 31],
+            [14, 15, 16, 17],
+            [27, 26, 25, 24],
+            [21, 22, 23, 24],
+            [20, 19, 18, 17],
+            [28, 29, 30, 31],
+            [13, 12, 11, 10],
+            [35, 36, 37, 38],
+            [6, 5, 4, 3],
+            [0, 7, 14, 21],
+            [41, 34, 27, 20],
+            [1, 8, 15, 22],
+            [40, 33, 26, 19],
+            [2, 9, 16, 23],
+            [39, 32, 25, 18],
+            [3, 10, 17, 24],
+            [38, 31, 24, 17],
+            [4, 11, 18, 25],
+            [37, 30, 23, 16],
+            [5, 12, 19, 26],
+            [36, 29, 22, 15],
+            [6, 13, 20, 27],
+            [35, 28, 21, 14],
+            [0, 8, 16, 24],
+            [41, 33, 25, 17],
+            [7, 15, 23, 31],
+            [34, 26, 18, 10],
+            [14, 22, 30, 38],
+            [27, 19, 11, 3],
+            [35, 29, 23, 17],
+            [6, 12, 18, 24],
+            [28, 2, 16, 10],
+            [13, 19, 25, 31],
+            [21, 15, 9, 3],
+            [20, 26, 31, 28],
+            [36, 30, 24, 18],
+            [5, 11, 17, 23],
+            [37, 31, 25, 19],
+            [4, 10, 16, 22],
+            [2, 10, 18, 26],
+            [39, 31, 23, 15],
+            [1, 9, 17, 25],
+            [40, 32, 24, 16],
+            [9, 17, 25, 33],
+            [8, 16, 24, 32],
+            [11, 17, 23, 29],
+            [12, 18, 24, 30],
+            [1, 2, 3, 4],
+            [5, 4, 3, 2],
+            [8, 9, 10, 11],
+            [12, 11, 10, 9],
+            [15, 16, 17, 18],
+            [19, 18, 17, 16],
+            [22, 23, 24, 25],
+            [26, 25, 24, 23],
+            [29, 30, 31, 32],
+            [33, 32, 31, 30],
+            [36, 37, 38, 39],
+            [40, 39, 38, 37],
+            [7, 14, 21, 28],
+            [8, 15, 22, 29],
+            [9, 16, 23, 30],
+            [10, 17, 24, 31],
+            [11, 18, 25, 32],
+            [12, 19, 26, 33],
+            [13, 20, 27, 34]
+        ]      
+    }
+    
+    renderBoard() {    
+        let h3 = document.createElement("h3");
+        h3.id="turn";       
+        let win;
+        if (this.turn === "red")
+            win = this.win("black");
+        else
+            win = this.win("red");
+        if (win) {
+            if (this.turn === "red")
+                h3.innerText = "Black Wins!";
+            else
+                h3.innerText = "Red Wins!";
+        }
+        else if (this.turn === "black")
+            h3.innerText = "Black's Turn";
+        else
+            h3.innerText = "Red's Turn";
+        document.body.appendChild(h3);
+
+        let gameDiv = document.createElement("div");
+        gameDiv.className = "game";
+        gameDiv.id = "game";
+        document.body.appendChild(gameDiv);
+        
+        for (let i = 0; i < this.board.length; i++) {
+            let circle = document.createElement("div");
+            circle.id = "circle";
+            const piece = this.board[i];
+            if (piece === "red")
+                circle.className = "red";
+            else if (piece === "black")
+                circle.className = "black";
+            else if (piece === "empty")
+                circle.className = "empty";
+            else {
+                circle.className = "bottom";
+            }
+            
+            let square = document.createElement("div");
+            if (circle.className === "bottom")
+                square.className = "bottomSquare";
+            else
+                square.className = "square";
+            circle.appendChild(square);
+            if (!win) {
+                circle.onclick = () => {
+                    const pieceBelow = this.board[i + 7];
+                    if ((pieceBelow === "black" || pieceBelow === "red" || pieceBelow === "bottom") 
+                    && piece === "empty") {
+                        if (this.turn === "black")
+                            this.board[i] = "black";
+                        else
+                            this.board[i] = "red";
+                    
+                        this.changeTurn();
+                        this.unRenderBoard();
+                        this.renderBoard(); 
+                    }
+                };
+            }
+            document.getElementById("game").appendChild(circle);
+        }
+    }
+
+    unRenderBoard() {
+        let gameDiv = document.getElementById("game");
+        if (gameDiv)
+            document.body.removeChild(gameDiv); 
+        let h3 = document.getElementById("turn");
+        if (h3)
+            document.body.removeChild(h3);
+    }
+
+    changeTurn() {
+        if (this.turn === "black")
+            this.turn = "red";
+        else
+            this.turn = "black";
+    }
+
+    win(color) {
+        for (let i of this.winningSquares) {
+            let count = 0;
+            for (let j of i) {
+                if (this.board[j] === color)
+                    count++;
+            }
+            if (count === 4) return true;
+        }
+        return false;
+    }
+    
 }
 
-function renderBoard() {
-    document.getElementById("game").innerHTML = "";
-    for (let i = 0; i < board.length; i++) {
-        let div = document.createElement("div");
-        if (board[i] === "red")
-            div.className = "red";
-        else if (board[i] = "black")
-            div.className = "black";
-        document.getElementById("game").appendChild(div);
-    }
-}
+
+
+
+
+
+
+
 
 
 

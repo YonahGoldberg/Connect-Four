@@ -1,6 +1,9 @@
 body {
-    margin: 0;
     background-color: darkgrey;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 h1 {
@@ -17,7 +20,7 @@ h3 {
     font-family: Helvetica;
     font-weight: 900;
     text-align: center;
-    padding-bottom: 4%;
+    padding-top: 4%;
     margin: 0; 
 }
 
@@ -31,7 +34,6 @@ h3 {
 .nav li {
     display: inline-block;
     padding-top: 2%;
-    padding-bottom: 5%;
 }
 
 .nav a {
@@ -78,7 +80,3 @@ h3 {
     background-color: red;
     border-radius: 50%; 
 }
-
-
-
-
