@@ -12,3 +12,9 @@ exports.makeId = (clientRooms) => {
     }
     return id;
 }
+
+exports.redOrBlack = () => {
+    const rnum = Math.floor(Math.random() * 2);
+    if (rnum === 0) return "red";
+    return "black";
+}

@@ -3,10 +3,11 @@ const express = require("express"),
     app = express(),
     port = process.env.PORT || 3000,
     socketio = require("socket.io"),
+    game = require("./game"),
+    GameState = game.GameState;
     path = require("path"),
     homeController = require("./homeController"),
     utils = require("./utils"),
-    Board = require("./game"),
     states = {},
     clientRooms = {};
 
@@ -30,18 +31,19 @@ io.on("connection", socket => {
         io.emit("message", `${id}: ${message}`);
     });
     
-    socket.on("create-room", sendId => {
+    socket.on("create-room", (username, sendId) => {
         const roomId = utils.makeId(clientRooms);
-        const board = new Board();
-        states[roomId] = board;
-        console.log(`Create Room: ${socket.id}`);
+        const gameState = new GameState();
+        const color = utils.redOrBlack();
+        game.setPlayer(gameState, socket.id, username, color);
+        
+        states[roomId] = gameState;
         clientRooms[socket.id] = roomId;
         socket.join(roomId);
         sendId(roomId);
     });
 
     socket.on("validId", (roomId, validId) => {
-        console.log(`Join Room: ${socket.id}`);
         const room = io.sockets.adapter.rooms.get(roomId);
         if (room && room.size === 1) 
             validId(true); 
@@ -49,11 +51,38 @@ io.on("connection", socket => {
             validId(false);
     });
 
-    socket.on("init", roomId => {
-        console.log(`init ${socket.id}`);
+    socket.on("init", (username, roomId) => {
         clientRooms[socket.id] = roomId;
+        let gameState = states[roomId];
+        if (!gameState) return;
+        if (gameState.red.id === "")
+            game.setPlayer(gameState, socket.id, username, "red");
+        else
+            game.setPlayer(gameState, socket.id, username, "black");
         socket.join(roomId);
-        io.sockets.in(roomId).emit("init", clientRooms[roomId]);
+        io.sockets.in(roomId).emit("init", states[roomId]);
+    });
+
+    socket.on("move", i => {
+        let room = clientRooms[socket.id];
+        let gameState = states[room];
+        if (!gameState) return;
+        let clientColor;
+        if (gameState.red.id === socket.id) clientColor = "red";
+        else clientColor = "black";
+        if (gameState.turn === "red" && clientColor === "red"
+        || gameState.turn === "black" && clientColor === "black") {
+            const piece = gameState.model[i];
+            const pieceBelow = gameState.model[i + 7];
+            if ((pieceBelow === "black" || pieceBelow === "red" || pieceBelow === "bottom")
+            &&  piece === "empty") {
+                gameState.model[i] = clientColor;
+                game.changeTurn(gameState);
+                if (game.win(gameState, "red")) gameState.winner = "red";
+                else if (game.win(gameState, "black")) gameState.winner = "black";
+                io.sockets.in(room).emit("render", gameState);
+            }
+        }
     });
     
     socket.on("disconnect", () => {
