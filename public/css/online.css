@@ -100,7 +100,7 @@ button:hover {
     font-family: Helvetica;
 }
 
-.noRoom {
+.missingInput {
     font-family: Helvetica;
     color: crimson;
     text-align: center;

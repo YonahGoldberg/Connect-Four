@@ -1,28 +1,36 @@
 const socket = io();
-const username = sessionStorage.getItem("username");
+let socketId;
 
 socket.on("connect", () => {
+    socketId = socket.id;
     if(getQueryVariable("created") === "true") {
-        socket.emit("create-room", id => {
+        const username = getQueryVariable("username");
+        socket.emit("create-room", username, id => {
             showRoomCode(id);
         });
     }
     else {
         const roomId = getQueryVariable("room");
-        socket.emit("init", roomId);
+        const username = getQueryVariable("username");
+        socket.emit("init", username, roomId);
     }
 });
 
-socket.on("init", (board) => {
+socket.on("init", (gameState) => {
     const h3 = document.getElementById("room");
     if (h3) h3.remove();
-    renderBoard(board);
+    renderGame(gameState);
+});
+
+socket.on("render", gameState => {
+    deRenderGame();
+    renderGame(gameState);
 });
 
 
 function showRoomCode(id) {
     const h3 = document.createElement("h3");
-    h3.id="room";
+    h3.id = "room";
     h3.innerText = `Room Code: ${id}`;
     document.body.appendChild(h3);
 }
@@ -39,14 +47,48 @@ function getQueryVariable(variable) {
     console.log('Query variable %s not found', variable);
 }
 
-function renderBoard(board) {    
+function renderGame(gameState) {    
     let h3 = document.createElement("h3");
     h3.id="turn";       
     
-    if (board.turn === "black")
-        h3.innerText = "Black's Turn";
-    else
-        h3.innerText = "Red's Turn";
+    console.log(gameState.red);
+    console.log(gameState.black);
+
+    let myColor;
+    let oppColor;
+    if (gameState.red.id === socketId) {
+        myColor = "red";
+        oppColor = "black";
+    }
+    else {
+        myColor = "black";
+        oppColor = "red";
+    }
+    
+    let win = false;
+    if (gameState.winner === myColor) {
+        win = true;
+        h3.innerText = "You win!";
+    }
+    else if (gameState.winner === oppColor) {
+        win = true;
+        if (oppColor === "red")
+            h3.innerText = `${gameState.red.username} Wins!`;
+        else
+            h3.innerText = `${gameState.black.username} Wins!`;
+    }
+    else if (gameState.turn === "black") {
+        if (myColor === "black")
+            h3.innerText = "Your Turn (Black)";
+        else
+            h3.innerText = `${gameState.black.username}'s Turn (Black)`;
+    }   
+    else {
+        if (myColor === "red")
+            h3.innerText = "Your Turn (Red)";
+        else
+            h3.innerText = `${gameState.red.username}'s Turn (Red)`;
+    }  
     document.body.appendChild(h3);
 
     let gameDiv = document.createElement("div");
@@ -54,10 +96,10 @@ function renderBoard(board) {
     gameDiv.id = "game";
     document.body.appendChild(gameDiv);
     
-    for (let i = 0; i < this.board.length; i++) {
+    for (let i = 0; i < gameState.model.length; i++) {
         let circle = document.createElement("div");
         circle.id = "circle";
-        const piece = this.board[i];
+        const piece = gameState.model[i];
         if (piece === "red")
             circle.className = "red";
         else if (piece === "black")
@@ -74,11 +116,18 @@ function renderBoard(board) {
         else
             square.className = "square";
         circle.appendChild(square);
+        if (!win) {
+            circle.onclick = e => {
+                e.preventDefault();
+                socket.emit("move", i);
+            }
+        }
+
         document.getElementById("game").appendChild(circle);
     }
 }
 
-function unRenderBoard() {
+function deRenderGame() {
     let gameDiv = document.getElementById("game");
     if (gameDiv)
         document.body.removeChild(gameDiv); 

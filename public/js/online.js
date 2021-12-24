@@ -34,19 +34,28 @@ sendMessageButton.addEventListener("click", e => {
 
 createRoomButton.addEventListener("click", e => {
     e.preventDefault();
-    location.href=`/online-game?username=${usernameInput.value}&created=true`;
+    const username = usernameInput.value;
+    if (username === "")
+        document.getElementById("noUsername").innerText = "Missing Username";
+    else
+        location.href=`/online-game?username=${usernameInput.value}&created=true`;
 });
 
 joinRoomButton.addEventListener("click", e => {
     e.preventDefault();
     const roomId = roomIdInput.value;
-    socket.emit("validId", roomId, validId => {
-        if (validId) {
-            location.href=`/online-game?username=${usernameInput.value}&room=${roomId}&created=false`;
-        }
-        else 
-            document.getElementById("noRoom").innerText = "Invalid Room Code";
-    });
+    const username = usernameInput.value;
+    if (usernameInput.value === "")
+        document.getElementById("noUsername").innerText = "Missing Username"; 
+    else {
+        socket.emit("validId", roomId, validId => {
+            if (validId) {
+                location.href=`/online-game?username=${username}&room=${roomId}&created=false`;
+            }
+            else 
+                document.getElementById("noRoom").innerText = "Invalid Room Code";
+        });
+    }   
 });
 
 
