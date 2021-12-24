@@ -19,7 +19,7 @@ const io = socketio(server, {
 });
 
 app.set("port", port);
-app.use(express.static(path.join("../public")));
+app.use(express.static(path.join(__dirname, "../public")));
 
 app.get("/", homeController.showHome)
     .get("/offline", homeController.showOffline)
