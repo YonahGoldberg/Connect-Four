@@ -1,20 +1,27 @@
 class GameState {
     constructor() {
         this.turn = "black";
-        this.model = [];
+        this.rematch = false;
+        this.model = initModel();
         this.winner = "none";
-        this.red = {"username": "", "id": ""};
-        this.black = {"username": "", "id": ""};
-        for (let i = 0; i < 42; i++) {
-            this.model.push("empty");
-        }
-        for (let i = 0; i < 7; i++) {
-            this.model.push("bottom");
-        }  
+        this.red = {"username": "", "id": "", wins: 0};
+        this.black = {"username": "", "id": "", wins: 0};
     }
 }
 
 exports.GameState = GameState;
+
+function initModel() {
+    let model = [];
+    for (let i = 0; i < 42; i++) {
+        model.push("empty");
+    }
+    for (let i = 0; i < 7; i++) {
+        model.push("bottom");
+    }
+    return model;  
+}
+exports.initModel = initModel;
 
 exports.setPlayer = (gameState, id, username, color) => {
     if (color === "red")

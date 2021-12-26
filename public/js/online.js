@@ -5,11 +5,13 @@ const joinRoomButton = document.getElementById("join-room");
 const createRoomButton = document.getElementById("create-room");
 const usernameInput = document.getElementById("username");
 const roomIdInput = document.getElementById("room-id");
+const form = document.getElementById("form");
 
 const socket = io();
 
 socket.on("connect", () => {
     displayMessage(`You connected with id: ${socket.id}`);
+    socket.emit("join-global");
 });
 
 socket.on("message", (message) => {
@@ -21,6 +23,15 @@ function displayMessage(message) {
     div.className = "message";
     div.textContent = message;
     chatBox.appendChild(div);
+}
+
+form.onsubmit = e => {
+    e.preventDefault();
+    const message = messageInput.value;
+    if (message !== "") {
+        socket.emit("message", message, socket.id);
+        messageInput.value = "";
+    } 
 }
 
 sendMessageButton.addEventListener("click", e => {

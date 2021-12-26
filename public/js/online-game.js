@@ -1,10 +1,15 @@
 const socket = io();
 let socketId;
+let chatBox;
+let messageInput;
+let sendMessageButton;
+const gameAndChat = document.getElementById("gameAndChat");
 
 socket.on("connect", () => {
     socketId = socket.id;
     if(getQueryVariable("created") === "true") {
         const username = getQueryVariable("username");
+        
         socket.emit("create-room", username, id => {
             showRoomCode(id);
         });
@@ -16,9 +21,10 @@ socket.on("connect", () => {
     }
 });
 
-socket.on("init", (gameState) => {
+socket.on("init", gameState => {
     const h3 = document.getElementById("room");
     if (h3) h3.remove();
+    renderChat();
     renderGame(gameState);
 });
 
@@ -27,6 +33,9 @@ socket.on("render", gameState => {
     renderGame(gameState);
 });
 
+socket.on("message", (message) => {
+    displayMessage(message);
+});
 
 function showRoomCode(id) {
     const h3 = document.createElement("h3");
@@ -48,11 +57,12 @@ function getQueryVariable(variable) {
 }
 
 function renderGame(gameState) {    
+    const container = document.createElement("div");
+    container.id = "container";
+    container.className = "vert";
+    gameAndChat.appendChild(container);
     let h3 = document.createElement("h3");
     h3.id="turn";       
-    
-    console.log(gameState.red);
-    console.log(gameState.black);
 
     let myColor;
     let oppColor;
@@ -88,13 +98,35 @@ function renderGame(gameState) {
             h3.innerText = "Your Turn (Red)";
         else
             h3.innerText = `${gameState.red.username}'s Turn (Red)`;
+    }
+   
+    if (win) {
+        const horiz = document.createElement("div");
+        horiz.id = "horiz";
+        horiz.className = "horiz"; 
+        const vert = document.createElement("div");
+        vert.className = "vert";
+        vert.id = "vert";
+        const btn = document.createElement("button");
+        btn.innerText = "Request Rematch";
+        btn.addEventListener("click", e => {
+            const h5 = document.createElement("h5");
+            h5.innerText = "Waiting For Opponent...";
+            vert.appendChild(h5);
+            socket.emit("rematch");
+        });
+        vert.appendChild(btn);
+        horiz.appendChild(h3);
+        horiz.appendChild(vert);
+        container.appendChild(horiz);
     }  
-    document.body.appendChild(h3);
+    else 
+        container.appendChild(h3);
 
-    let gameDiv = document.createElement("div");
+    let gameDiv = document.createElement("div");``
     gameDiv.className = "game";
     gameDiv.id = "game";
-    document.body.appendChild(gameDiv);
+    container.appendChild(gameDiv);
     
     for (let i = 0; i < gameState.model.length; i++) {
         let circle = document.createElement("div");
@@ -128,10 +160,71 @@ function renderGame(gameState) {
 }
 
 function deRenderGame() {
-    let gameDiv = document.getElementById("game");
-    if (gameDiv)
-        document.body.removeChild(gameDiv); 
-    let h3 = document.getElementById("turn");
-    if (h3)
-        document.body.removeChild(h3);
+    let container = document.getElementById("container");
+    if (container) {
+        gameAndChat.removeChild(container);
+    }
+    let horiz = document.getElementById("horiz");
+    if (horiz) {
+        gameAndChat.removeChild(horiz);
+    }
+}
+
+function renderChat() {
+    const chatDiv = document.createElement("div");
+    chatDiv.className = "chat";
+    chatDiv.id = "chat";
+    const box = document.createElement("div");
+    chatBox = box;
+    box.className = "box";
+    box.id = "box";
+    const h3 = document.createElement("h3");
+    h3.innerText = "Room Chat";
+    const form = document.createElement("form");
+    form.onsubmit = e => {
+        e.preventDefault();
+        const message = messageInput.value;
+        if (message !== "") {
+            socket.emit("roomMessage", message);
+            messageInput.value = "";
+        }
+    }
+    const vert = document.createElement("div");
+    vert.className = "vert";
+    vert.id = "vert";
+    const label = document.createElement("label");
+    label.innerText = "Message";
+    const input = document.createElement("input");
+    messageInput = input;
+    input.type = "text";
+    input.id = "message";
+    input.name = "message";
+    const btn = document.createElement("button");
+    sendMessageButton = btn;
+    btn.type = "button";
+    btn.id = "sendMessage";
+    btn.innerText = "Send Message";
+    btn.addEventListener("click", e => {
+        e.preventDefault();
+        const message = messageInput.value;
+        if (message !== "") {
+            socket.emit("roomMessage", message);
+            messageInput.value = "";
+        }
+    });
+    chatDiv.appendChild(h3);
+    chatDiv.appendChild(box);
+    chatDiv.appendChild(form);
+    form.appendChild(vert);
+    form.appendChild(btn);
+    vert.appendChild(label);
+    vert.appendChild(input);
+    gameAndChat.appendChild(chatDiv);
+}
+
+function displayMessage(message) {
+    const div = document.createElement("div");
+    div.className = "message";
+    div.textContent = message;
+    chatBox.appendChild(div);
 }

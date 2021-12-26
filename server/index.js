@@ -27,8 +27,24 @@ app.get("/", homeController.showHome)
     .get("/online-game", homeController.showOnlineGame);
 
 io.on("connection", socket => {
+    socket.on("join-global", () => {
+        socket.join("global");
+    })
+    
     socket.on("message", (message, id) => {
-        io.emit("message", `${id}: ${message}`);
+        io.sockets.to("global").emit("message", `${id}: ${message}`);
+    });
+
+    socket.on("roomMessage", message => {
+        const room = clientRooms[socket.id];
+        let gameState = states[room];
+        if (!gameState) return;
+        let username;
+        if (gameState.red.id === socket.id) 
+            username = gameState.red.username;
+        else
+            username = gameState.black.username; 
+        io.sockets.to(room).emit("message", `${username}: ${message}`);
     });
     
     socket.on("create-room", (username, sendId) => {
@@ -78,13 +94,35 @@ io.on("connection", socket => {
             &&  piece === "empty") {
                 gameState.model[i] = clientColor;
                 game.changeTurn(gameState);
-                if (game.win(gameState, "red")) gameState.winner = "red";
-                else if (game.win(gameState, "black")) gameState.winner = "black";
+                if (game.win(gameState, "red")) {
+                    gameState.winner = "red";
+                    gameState.red.wins += 1;
+                }
+                else if (game.win(gameState, "black")) {
+                    gameState.winner = "black";
+                    gameState.black.wins += 1;
+                }
                 io.sockets.in(room).emit("render", gameState);
             }
         }
     });
     
+    socket.on("rematch", () => {
+        let room = clientRooms[socket.id];
+        let gameState = states[room];
+        if (!gameState) return;
+        if (gameState.rematch) {
+            gameState.winner = "none";
+            gameState.rematch = false;
+            gameState.model = game.initModel();
+            io.sockets.in(room).emit("render", gameState);
+        }
+        else {
+            gameState.rematch = true;
+            console.log("Hello");
+        }
+    });
+
     socket.on("disconnect", () => {
         const clientRoomId = clientRooms[socket.id];        
         delete states[clientRoomId];

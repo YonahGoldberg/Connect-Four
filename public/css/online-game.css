@@ -6,6 +6,14 @@ body {
     align-items: center;
 }
 
+.gameAndChat {
+    padding-top: 2%;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+    gap: 8%;
+}
+
 h1 {
     color: #333;
     font-family: Helvetica;
@@ -56,7 +64,6 @@ h3 {
     border: 1px solid;
     height: 310px;
     width: 364px;
-    margin: auto;
     display: flex;
     flex-wrap: wrap;
 }
@@ -79,4 +86,67 @@ h3 {
     height: 52px;
     background-color: red;
     border-radius: 50%; 
+}
+
+button {
+    color: #fff;
+    background-color: #333;
+    width: 100px;
+    font-size: 14px;
+    font-family: Helvetica;
+    border: none;
+}
+
+button:hover {
+    background-color: black;
+    transition: 0.4s;
+}
+
+.vert {
+    display: flex;
+    flex-direction: column;
+}
+
+.horiz {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    justify-content: center;
+}
+
+h5 {
+    font-family: Helvetica;
+    color: crimson;
+    text-align: center;
+    font-weight: 900;
+    margin: 0;
+}
+
+.chat h3, .vert h3 {
+    font-family: Helvetica;
+    text-align: center;
+    font-weight: 900;
+    padding-bottom: 2%;
+}
+
+.box {
+    width: 364px;
+    height: 310px;
+    border: 2px solid;
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+}
+
+.box .message {
+    font-family: Helvetica;
+}
+
+form {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    font-family: Helvetica;
+    padding-top: 2%;
+    gap: 10px;
 }
